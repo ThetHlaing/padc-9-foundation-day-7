@@ -11,4 +11,11 @@ def connect():
     )
 
     cursor = mydb.cursor()
-    return cursor,mydb
+
+    cursor.execute('create database if not exists hrapp')
+    cursor.execute('use hrapp')
+    cursor.execute(
+        'create table if not exists employees(id int auto_increment,name text,position text, department_id int, salary int, primary key(id))')
+    cursor.execute(
+        'create table if not exists departments(id int auto_increment,name text, primary key(id))')
+    return cursor, mydb

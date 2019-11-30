@@ -1,76 +1,49 @@
-from db_connector import connect
-
-cursor, mydb = connect()
-
-
-def setup():
-    cursor.execute('create database if not exists hrapp')
-    cursor.execute('use hrapp')
-    cursor.execute(
-        'create table if not exists employees(id int auto_increment,name text,position text, department_id int, salary int, primary key(id))')
-    cursor.execute(
-        'create table if not exists departments(id int auto_increment,name text, primary key(id))')
-
-
-setup()
+from Department import Department
+from Employee import Employee
 
 
 def addNewDepartment():
 
-    department_name = input("Please enter the department name : ")
-
-    cursor.execute("insert into departments (name) values (%s)",
-                   [department_name])
-    mydb.commit()
+    deparment = Department()
+    deparment.name = input("Please enter the department name : ")
+    deparment.save()
 
 
 def displayAllDepartments():
-    cursor.execute("Select * from departments")
-    for department in cursor.fetchall():
-        print(f'[{department[0]}] - {department[1]} Department')
+    department_list = Department.get()
+    # cursor.execute("Select * from departments")
+    for department in department_list:
+        department.display()
 
 
 def addNewEmployee():
-    name = input("Please enter the employee name :")
-    position = input("Please enter the job position : ")
-    salary = input("Please enter the salary : ")
+    employee = Employee()
+    employee.name = input("Please enter the employee name :")
+    employee.position = input("Please enter the job position : ")
+    employee.salary = input("Please enter the salary : ")
     displayAllDepartments()
-    department_id = input("Please enter department id : ")
-    cursor.execute(
-        "insert into employees set name = %s, position = %s, salary = %s, department_id = %s",
-        [name, position, salary, department_id])
-    mydb.commit()
-    displayAllEmployees()
+    employee.department_id = input("Please enter department id : ")
+    employee.save()
 
 
 def displayAllEmployees():
-    cursor.execute("Select * from employees")
-    for employee in cursor.fetchall():
-        print(f'[{employee[0]}] - {employee[1]} - Position - {employee[2]}'
-              f' - Department {employee[3]}'
-              f' - Salary {employee[4]} Ks')
-
-
-def getEmployeeById(id):
-    cursor.execute("select * from employees where id = %s", [id])
-    employee = cursor.fetchone()
-    return employee
-
+    employees = Employee.get()
+    for employee in employees:
+        employee.display()
 
 def increaseSalary():
     print("Preparing to increase salary")
     displayAllEmployees()
     employee_id = input("Please select the employee : ")
-    employee = getEmployeeById(employee_id)
+    employee = Employee.find(employee_id)
     user_choise = input(
-        f"Are you sure you want to raise {employee[1]}'s salary? : y/n \n")
+        f"Are you sure you want to raise {employee.name}'s salary? : y/n \n")
     if(user_choise == 'y'):
         increase_amount = int(input("How much do you want to increase : "))
-        new_salary = increase_amount + int(employee[4])
-        cursor.execute("Update employees set salary = %s where id = %s",
-                       [new_salary, employee_id])
-        mydb.commit()
-        displayAllEmployees()
+        # employee.name = "This is going to be update"
+        employee.salary = increase_amount + int(employee.salary)
+        employee.update()
+        
 
 
 def displayMenu():
